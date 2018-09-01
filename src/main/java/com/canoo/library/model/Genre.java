@@ -1,0 +1,5 @@
+package com.canoo.library.model;
+
+public enum Genre {
+    SF, HORROR, SATIRE, DYSTOPIA, ADVENTURE, FANTASY, DRAMA, TRAGEDY, NONFICTION, FICTION, COMICS, CRIME, POETRY, HISTORY;
+}
