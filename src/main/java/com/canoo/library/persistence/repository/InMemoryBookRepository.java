@@ -1,59 +1,70 @@
 package com.canoo.library.persistence.repository;
 
 import com.canoo.library.model.Book;
+import com.canoo.library.model.Genre;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class InMemoryBookRepository implements BookRepository {
 
-    private static final List<Book> books = new ArrayList<>();
+    private final List<Book> books = new ArrayList<>();
+    private static final double TEXT_SEARCH_THRESHOLD = 0.75;
 
-    public InMemoryBookRepository(){
-        books.add(new Book("The Lord if the Rings", "", LocalDate.now(), "",""));
-        books.add(new Book("The Hitchiker's guide to the Galaxy", "", LocalDate.now(), "",""));
-        books.add(new Book("1984", "", LocalDate.now(), "",""));
-        books.add(new Book("Catch-22", "", LocalDate.now(), "",""));
-        books.add(new Book("The Shining", "", LocalDate.now(), "",""));
-        books.add(new Book("A Storm of Swords", "", LocalDate.now(), "",""));
-        books.add(new Book("Calvin and Hobbes", "", LocalDate.now(), "",""));
+    public InMemoryBookRepository(Iterable<Book> books){
 
+        books.forEach(this.books::add);
     }
 
     @Override
     public Iterable<Book> findById(Long id) {
-        return null;
+        return books.stream().filter(book -> book.getId().equals(id)).collect(Collectors.toList());
     }
 
     @Override
     public Iterable<Book> findByTitle(String title) {
-        return null;
+        return books.stream().filter(book -> book.getTitle().toLowerCase().contains(title.toLowerCase())).collect(Collectors.toList());
     }
 
     @Override
     public Iterable<Book> findByAuthor(String author) {
-        return null;
+        return books.stream().filter(book -> book.getAuthor().toLowerCase().contains(author.toLowerCase()))
+                .collect(Collectors.toList());
     }
 
     @Override
     public Iterable<Book> findByPublicationDate(LocalDate from, LocalDate to) {
-        return null;
+        return books.stream().filter(book -> book.getPublicationDate()
+                    .isAfter(from) &&  book.getPublicationDate().isBefore(to))
+                    .collect(Collectors.toList());
     }
 
     @Override
-    public Iterable<Book> searchBasedOnText(String text) {
-        return null;
+    public Iterable<Book> searchBasedOnDescription(String searchText) {
+        return books.stream().filter(book -> {
+            List<String> searchKeywords = Arrays.asList(searchText.split(" "));
+            Long numberOfSearchWordsAppearing = searchKeywords.stream().filter(word -> book.getDescription().toLowerCase().contains(word.toLowerCase())).count();
+
+            return (double)numberOfSearchWordsAppearing/(double)(searchKeywords.size()) > TEXT_SEARCH_THRESHOLD;
+
+        }).collect(Collectors.toList());
     }
 
     @Override
     public Iterable<Book> findByISBN(String ISBN) {
-        return null;
+        return books.stream().filter(book -> book.getISBN().equals(ISBN)).collect(Collectors.toList());
     }
 
     @Override
-    public Iterable<Book>
-    findAll() {
-        return null;
+    public Iterable<Book> findByGenre(List<Genre> genres) {
+        return books.stream().filter(book->book.getGenres().containsAll(genres)).collect(Collectors.toList());
+    }
+
+    @Override
+    public Iterable<Book> findAll() {
+        return books;
     }
 }
