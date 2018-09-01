@@ -1,25 +1,11 @@
 package com.canoo.library.persistence.repository;
 
 import com.canoo.library.model.Book;
-import com.canoo.library.model.Genre;
 
-import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Predicate;
 
 public interface BookRepository {
-    Iterable<Book> findAll();
+    Iterable<Book> findBasedOnPredicates(List<Predicate<Book>> predicates, Integer pageNumber, Integer pageSize);
 
-    Iterable<Book> findById(Long id);
-
-    Iterable<Book> findByTitle(String title);
-
-    Iterable<Book> findByAuthor(String author);
-
-    Iterable<Book> findByPublicationDate(LocalDate from, LocalDate to);
-
-    Iterable<Book> searchBasedOnDescription(String text);
-
-    Iterable<Book> findByISBN(String ISBN);
-
-    Iterable<Book> findByGenre(List<Genre> genres);
 }
