@@ -3,6 +3,7 @@ package com.canoo.library.web;
 
 import com.canoo.library.model.Book;
 import com.canoo.library.model.Genre;
+import com.canoo.library.model.SortableBookField;
 import com.canoo.library.persistence.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,51 +11,57 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 
 @RestController("/api")
 public class BookController {
     @Autowired
-    BookRepository repository;
+    private BookRepository repository;
+
+    //TODO move these to a property file
+    private final Integer PAGE_SIZE_DEFAULT = 10;
+    private final Double DESCRIPTION_SEARCH_THRESHOLD = 0.75;
 
     @ResponseBody
-    @RequestMapping(value="/books",method= RequestMethod.GET)
+    @RequestMapping(value = "/books", method = RequestMethod.GET)
     public ResponseEntity<Iterable<Book>> getBooks(
-                                                @RequestParam("id") Optional<Long> id,
-                                                @RequestParam("title") Optional<String> title,
-                                                @RequestParam("author") Optional<String> author,
-                                                @RequestParam("publicationDateFrom") Optional<LocalDate> publicationDateFrom,
-                                                @RequestParam("publicationDateTo") Optional<LocalDate> publicationDateTo,
-                                                @RequestParam("description") Optional<String> description,
-                                                @RequestParam("genre") Optional<List<Genre>> genres){
-
-        //TODO implement pagination
+            @RequestParam("id") Optional<Long> id,
+            @RequestParam("title") Optional<String> title,
+            @RequestParam("author") Optional<String> author,
+            @RequestParam("publicationDateFrom") Optional<LocalDate> publicationDateFrom,
+            @RequestParam("publicationDateTo") Optional<LocalDate> publicationDateTo,
+            @RequestParam("description") Optional<String> description,
+            @RequestParam("genre") Optional<List<Genre>> genres,
+            @RequestParam("pageNumber") Optional<Integer> pageNumber,
+            @RequestParam("pageSize") Optional<Integer> pageSize,
+            @RequestParam("sortBy") Optional<String> sortBy) {
 
         List<Predicate<Book>> predicatesForFiltering = new ArrayList<>();
 
-        if(id.isPresent()){
-            predicatesForFiltering.add(Book.idPredicate(id.get()));
-        }
-        if(title.isPresent()){
-            predicatesForFiltering.add(Book.titlePredicate(title.get()));
-        }
-        if(author.isPresent()){
-            predicatesForFiltering.add(Book.authorPredicate(author.get()));
-        }
-        if(publicationDateFrom.isPresent() && publicationDateTo.isPresent()){
-            predicatesForFiltering.add(Book.publicationDatePredicate(publicationDateFrom.get(),publicationDateTo.get()));
-        }
-        if(title.isPresent()){
-            predicatesForFiltering.add(Book.titlePredicate(title.get()));
-        }
-        if(description.isPresent()){
-            predicatesForFiltering.add(Book.titlePredicate(description.get()));
+        id.ifPresent(i -> predicatesForFiltering.add(Book.idPredicate(i)));
+        title.ifPresent(t->predicatesForFiltering.add(Book.titlePredicate(t)));
+        author.ifPresent(a ->predicatesForFiltering.add(Book.authorPredicate(a)));
+        description.ifPresent(d ->predicatesForFiltering.add(Book.descriptionPredicate(description.get(),
+                DESCRIPTION_SEARCH_THRESHOLD)));
+        genres.ifPresent(g -> predicatesForFiltering.add(Book.genresPredicate(g)));
+
+        if(publicationDateFrom.isPresent() && publicationDateTo.isPresent()) {
+            predicatesForFiltering.add(Book.publicationDatePredicate(publicationDateFrom.get(), publicationDateTo.get()));
         }
 
-        ResponseEntity<Iterable<Book>> response = new ResponseEntity<>(repository.findBasedOnPredicates(predicatesForFiltering,0,10),HttpStatus.OK);
+        Iterable<Book> booksToShow;
+
+        if(sortBy.isPresent()){
+            booksToShow = repository.findBasedOnPredicates(predicatesForFiltering,
+                    pageNumber.orElse(0), pageSize.orElse(PAGE_SIZE_DEFAULT),
+                    SortableBookField.valueOf(sortBy.get().toUpperCase()).getComparator());
+        } else {
+            booksToShow = repository.findBasedOnPredicates(predicatesForFiltering,
+                    pageNumber.orElse(0), pageSize.orElse(PAGE_SIZE_DEFAULT));
+        }
+
+        ResponseEntity<Iterable<Book>> response = new ResponseEntity<>(booksToShow, HttpStatus.OK);
 
         return response;
     }

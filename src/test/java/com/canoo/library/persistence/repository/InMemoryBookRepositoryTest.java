@@ -2,13 +2,15 @@ package com.canoo.library.persistence.repository;
 
 import com.canoo.library.model.Book;
 import com.canoo.library.model.Genre;
+import com.canoo.library.model.SortableBookField;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.contains;
@@ -16,7 +18,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
 
 import static org.hamcrest.collection.IsIterableWithSize.iterableWithSize;
-
+import static org.junit.Assert.assertTrue;
 
 public class InMemoryBookRepositoryTest {
 
@@ -157,12 +159,11 @@ public class InMemoryBookRepositoryTest {
 
     @Test
     public void findByGenre() {
+        List<Genre> genresWeAreLookingFor = new ArrayList<>();
+        genresWeAreLookingFor.add(Genre.DYSTOPIA);
+        genresWeAreLookingFor.add(Genre.DRAMA);
 
-        List<Genre> genresWeareLookingFor = new ArrayList<>();
-        genresWeareLookingFor.add(Genre.DYSTOPIA);
-        genresWeareLookingFor.add(Genre.DRAMA);
-
-        Iterable<Book> result = repository.findBasedOnPredicates(List.of(Book.genresPredicate(genresWeareLookingFor)),0,10);
+        Iterable<Book> result = repository.findBasedOnPredicates(List.of(Book.genresPredicate(genresWeAreLookingFor)),0,10);
 
         assertThat(result, contains(
                 hasProperty("title", is("1984"))
@@ -173,7 +174,6 @@ public class InMemoryBookRepositoryTest {
 
     @Test
     public void findBasedOnMultiplePredicates() {
-
         Iterable<Book> result = repository.findBasedOnPredicates(List.of(Book.titlePredicate("A Storm of Swords"),Book.authorPredicate("George R. R. Martin")),0,10);
 
         assertThat(result, contains(
@@ -185,7 +185,6 @@ public class InMemoryBookRepositoryTest {
 
     @Test
     public void dontFindBasedOnNonMatchingMultiplePredicates() {
-
         Iterable<Book> result = repository.findBasedOnPredicates(List.of(Book.titlePredicate("A Storm of Swords"),Book.authorPredicate("Stephen King")),0,10);
 
         assertThat(result, iterableWithSize(0));
@@ -193,9 +192,22 @@ public class InMemoryBookRepositoryTest {
 
     @Test
     public void findOneBookOnPage2() {
-
-        Iterable<Book> result = repository.findBasedOnPredicates(new ArrayList<Predicate<Book>>(),2,3);
+        Iterable<Book> result = repository.findBasedOnPredicates(new ArrayList<>(),2,3);
 
         assertThat(result, iterableWithSize(1));
+    }
+
+    @Test
+    public void sortingByTitleWorks() {
+        Iterable<Book> result = repository.findBasedOnPredicates(new ArrayList<>(),0,10, SortableBookField.TITLE.getComparator());
+
+        assertThat(result, iterableWithSize(7));
+
+        List<Book> resultAsList = StreamSupport.stream(result.spliterator(), false)
+                .collect(Collectors.toList());
+
+        assertTrue(resultAsList.get(0).getTitle().equals("1984"));
+        assertTrue(resultAsList.get(4).getTitle().equals("The Hitchiker's guide to the Galaxy"));
+        assertTrue(resultAsList.get(6).getTitle().equals("The Shining"));
     }
 }

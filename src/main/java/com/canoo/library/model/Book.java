@@ -1,10 +1,8 @@
 package com.canoo.library.model;
 
-import ch.qos.logback.core.CoreConstants;
-import org.apache.tomcat.jni.Local;
-
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -103,4 +101,17 @@ public class Book {
 
         };
     }
+
+    public static Comparator<Book> titleComparator(){
+        return Comparator.comparing(Book::getTitle);
+    }
+
+    public static Comparator<Book> authorComparator(){
+        return Comparator.comparing(Book::getAuthor);
+    }
+
+    public static Comparator<Book> publicationDateComparator(){
+        return Comparator.comparing(Book::getPublicationDate);
+    }
+
 }
