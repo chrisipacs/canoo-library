@@ -11,4 +11,6 @@ public interface BookRepository {
 
     Iterable<Book> findBasedOnPredicates(List<Predicate<Book>> predicates, Integer pageNumber, Integer pageSize,
                                          Comparator<Book> comparator);
+
+    void delete(Long id);
 }

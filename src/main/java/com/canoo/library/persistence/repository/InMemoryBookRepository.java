@@ -3,6 +3,7 @@ package com.canoo.library.persistence.repository;
 import com.canoo.library.model.Book;
 
 import java.util.ArrayList;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
@@ -43,5 +44,15 @@ public class InMemoryBookRepository implements BookRepository {
 
     private Stream<Book> paginate(Stream<Book> bookStream, Integer pageNumber, Integer pageSize){
         return bookStream.skip(pageSize*pageNumber).limit(pageSize);
+    }
+
+    @Override
+    public void delete(Long id) {
+        synchronized (books){
+            books.stream()
+                    .filter(book -> book.getId().equals(id))
+                    .findFirst()
+                    .ifPresentOrElse(books::remove,RuntimeException::new);
+        }
     }
 }
