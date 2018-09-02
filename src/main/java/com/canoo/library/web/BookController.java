@@ -76,4 +76,16 @@ public class BookController {
 
         return new ResponseEntity(HttpStatus.ACCEPTED);
     }
+
+    @RequestMapping(value = "/books/{id}", method = RequestMethod.GET)
+    public ResponseEntity<Book> getBook(@PathVariable("id") Long id){
+        List<Predicate<Book>> predicates = List.of(Book.idPredicate(id));
+
+        Iterable<Book> result = repository.findBasedOnPredicates(predicates,0,1);
+        for(Book b: result){
+            return new ResponseEntity<Book>(b, HttpStatus.OK);
+        }
+
+        return new ResponseEntity(HttpStatus.NOT_FOUND);
+    }
 }
