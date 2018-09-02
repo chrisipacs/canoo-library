@@ -7,6 +7,7 @@ import com.canoo.library.model.SortableBookField;
 import com.canoo.library.persistence.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -63,9 +64,7 @@ public class BookController {
                     pageNumber.orElse(0), pageSize.orElse(PAGE_SIZE_DEFAULT));
         }
 
-        ResponseEntity<Iterable<Book>> response = new ResponseEntity<>(booksToShow, HttpStatus.OK);
-
-        return response;
+        return new ResponseEntity<>(booksToShow, HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -74,18 +73,35 @@ public class BookController {
     public ResponseEntity<HttpStatus> deleteBook(@PathVariable("id") Long id){
         repository.delete(id);
 
-        return new ResponseEntity(HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
     @RequestMapping(value = "/books/{id}", method = RequestMethod.GET)
     public ResponseEntity<Book> getBook(@PathVariable("id") Long id){
-        List<Predicate<Book>> predicates = List.of(Book.idPredicate(id));
-
-        Iterable<Book> result = repository.findBasedOnPredicates(predicates,0,1);
+        Iterable<Book> result = getBooks(id);
         for(Book b: result){
-            return new ResponseEntity<Book>(b, HttpStatus.OK);
+            return new ResponseEntity<>(b, HttpStatus.OK);
         }
 
-        return new ResponseEntity(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @RequestMapping(value = "/books/{id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<Book> updateBook(@PathVariable("id") Long id,
+                                            @RequestBody Book book){
+
+        if(!id.equals(book.getId()) && book.getId()!=null){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        repository.save(book);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    private Iterable<Book> getBooks(Long id) {
+        List<Predicate<Book>> predicates = List.of(Book.idPredicate(id));
+
+        return repository.findBasedOnPredicates(predicates, 0, 1);
     }
 }

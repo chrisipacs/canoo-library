@@ -47,6 +47,15 @@ public class InMemoryBookRepository implements BookRepository {
     }
 
     @Override
+    public void save(Book toSave) {
+        synchronized (books) {
+            books.stream().filter(book -> book.equals(toSave)).findFirst().ifPresent(books::remove);
+
+            books.add(toSave);
+        }
+    }
+
+    @Override
     public void delete(Long id) {
         synchronized (books){
             books.stream()

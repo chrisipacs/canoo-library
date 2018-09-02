@@ -13,4 +13,6 @@ public interface BookRepository {
                                          Comparator<Book> comparator);
 
     void delete(Long id);
+
+    void save(Book toSave);
 }

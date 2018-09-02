@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 public class Book {
@@ -17,6 +18,10 @@ public class Book {
     private String ISBN;
     private String description;
     private List<Genre> genres;
+
+    public Book(){
+
+    }
 
     public Book(String title, String author, LocalDate publicationDate, String ISBN, String description, List<Genre> genres) {
         this.title = title;
@@ -95,7 +100,8 @@ public class Book {
     public static Predicate<Book> descriptionPredicate(String searchText, Double threshold){
         return book -> {
             List<String> searchKeywords = Arrays.asList(searchText.split(" "));
-            Long numberOfSearchWordsAppearing = searchKeywords.stream().filter(word -> book.getDescription().toLowerCase().contains(word.toLowerCase())).count();
+            long numberOfSearchWordsAppearing =
+                    searchKeywords.stream().filter(word -> book.getDescription().toLowerCase().contains(word.toLowerCase())).count();
 
             return (double)numberOfSearchWordsAppearing/(double)(searchKeywords.size()) > threshold;
 
@@ -114,4 +120,18 @@ public class Book {
         return Comparator.comparing(Book::getPublicationDate);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Book book = (Book) o;
+        return Objects.equals(id, book.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }
