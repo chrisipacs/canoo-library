@@ -8,6 +8,7 @@ import org.junit.Test;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.contains;
@@ -188,5 +189,13 @@ public class InMemoryBookRepositoryTest {
         Iterable<Book> result = repository.findBasedOnPredicates(List.of(Book.titlePredicate("A Storm of Swords"),Book.authorPredicate("Stephen King")),0,10);
 
         assertThat(result, iterableWithSize(0));
+    }
+
+    @Test
+    public void findOneBookOnPage2() {
+
+        Iterable<Book> result = repository.findBasedOnPredicates(new ArrayList<Predicate<Book>>(),2,3);
+
+        assertThat(result, iterableWithSize(1));
     }
 }
