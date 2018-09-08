@@ -2,8 +2,12 @@ package com.canoo.library.configuration;
 
 import com.canoo.library.model.Book;
 import com.canoo.library.model.Genre;
+import com.canoo.library.model.User;
 import com.canoo.library.persistence.repository.BookRepository;
 import com.canoo.library.persistence.repository.InMemoryBookRepository;
+import com.canoo.library.persistence.repository.InMemoryUserRepository;
+import com.canoo.library.persistence.repository.UserRepository;
+import com.canoo.library.security.JWTUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,6 +36,18 @@ public class AppConfig {
         booksInRepository.add(new Book("Calvin and Hobbes", "Bill Watterson", LocalDate.now(), "0740748475",calvinAndHobbesDescription,List.of(Genre.COMICS)));
 
         return new InMemoryBookRepository(booksInRepository);
+    }
+
+    @Bean
+    UserRepository userRepository(){
+        //TODO create dummy data
+
+        return new InMemoryUserRepository(new ArrayList<>());
+    }
+
+    @Bean
+    JWTUtil jwtUtil(){
+        return new JWTUtil();
     }
 
 }

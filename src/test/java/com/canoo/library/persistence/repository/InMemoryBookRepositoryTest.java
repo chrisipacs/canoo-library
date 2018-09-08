@@ -5,7 +5,6 @@ import com.canoo.library.model.Genre;
 import com.canoo.library.model.SortableBookField;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -20,8 +19,6 @@ import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
 
 import static org.hamcrest.collection.IsIterableWithSize.iterableWithSize;
 import static org.junit.Assert.assertTrue;
-
-//TODO mockito
 
 public class InMemoryBookRepositoryTest {
 
