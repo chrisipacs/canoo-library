@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +18,8 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Predicate;
 
-@RestController("/api")
+@RestController
+@RequestMapping("/api")
 public class BookController {
     @Autowired
     private BookRepository repository;
@@ -67,7 +69,7 @@ public class BookController {
         return new ResponseEntity<>(booksToShow, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @Secured("ROLE_ADMIN")
     @ResponseBody
     @RequestMapping(value = "/books/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<HttpStatus> deleteBook(@PathVariable("id") Long id){
@@ -86,7 +88,8 @@ public class BookController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @RequestMapping(value = "/books/{id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/books/{id}", method = RequestMethod.PUT, consumes =
+            MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<Book> updateBook(@PathVariable("id") Long id,
                                             @RequestBody Book book){
 

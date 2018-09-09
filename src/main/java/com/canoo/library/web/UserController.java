@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,7 +32,7 @@ public class UserController {
         String username = decoded[0];
         String password = decoded[1];
 
-        User user = repository.getByName(username);
+        User user = getUserFromRepoByName(username);
 
         if(user==null || !encoder.matches(password, user.getPassword())){
             return new ResponseEntity<>("unauthorized access",HttpStatus.UNAUTHORIZED);
@@ -41,17 +42,13 @@ public class UserController {
     }
 
     @RequestMapping(value="/register", method=RequestMethod.PUT)
-    public ResponseEntity<String> usernamePasswordRegistration(@RequestBody User userToCreate) {
+    public ResponseEntity<String> usernamePasswordRegistration(@RequestBody @Validated User userToCreate) {
 
         User user = null;
+        user = getUserFromRepoByName(userToCreate.getUsername());
 
-        try{
-            user = repository.getByName(userToCreate.getUsername());
-            if(user!=null){
-                return new ResponseEntity<>(jwtUtil.generateToken(user),HttpStatus.BAD_REQUEST);
-            }
-        } catch(RecordNotFoundException e){
-            user = new User.Builder()
+        if(user==null){
+            user= new User.Builder()
                             .setName(userToCreate.getUsername())
                             .setPassword(encoder.encode(userToCreate.getPassword()))
                             .setEmail(userToCreate.getEmail())
@@ -60,6 +57,18 @@ public class UserController {
         }
 
         return new ResponseEntity<>(jwtUtil.generateToken(user),HttpStatus.OK);
+    }
+
+    private User getUserFromRepoByName(String name){
+        User user = null;
+        try{
+            user = repository.getByName(name);
+        } catch(RecordNotFoundException e){
+            return null;
+            //TODO log
+        }
+
+        return user;
     }
 
 }

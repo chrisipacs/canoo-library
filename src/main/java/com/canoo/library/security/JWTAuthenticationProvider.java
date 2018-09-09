@@ -6,7 +6,12 @@ import org.springframework.security.authentication.AuthenticationProvider;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class JWTAuthenticationProvider implements AuthenticationProvider {
@@ -25,7 +30,8 @@ public class JWTAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        JWTAuthenticationToken jwtAuthenticationToken = (JWTAuthenticationToken) authentication;
+        JWTAuthenticationToken jwtAuthenticationToken = (JWTAuthenticationToken)authentication;
+
         String token = jwtAuthenticationToken.getToken();
 
         User parsedUser = jwtUtil.parseToken(token);
@@ -34,9 +40,16 @@ public class JWTAuthenticationProvider implements AuthenticationProvider {
             throw new JWTTokenMalformedException("JWT token is not valid");
         }
 
-        jwtAuthenticationToken.setPrincipal(parsedUser);
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority(parsedUser.getRole()));
 
-        return jwtAuthenticationToken;
+        JWTAuthenticationToken finalToken =
+                new JWTAuthenticationToken(((JWTAuthenticationToken)authentication).getToken(),authorities);
+
+        finalToken.setPrincipal(parsedUser);
+        finalToken.setAuthenticated(true);
+
+        return finalToken;
     }
 
 }

@@ -2,14 +2,17 @@ package com.canoo.library.configuration;
 
 import com.canoo.library.model.Book;
 import com.canoo.library.model.Genre;
+import com.canoo.library.model.Role;
 import com.canoo.library.model.User;
 import com.canoo.library.persistence.repository.BookRepository;
 import com.canoo.library.persistence.repository.InMemoryBookRepository;
 import com.canoo.library.persistence.repository.InMemoryUserRepository;
 import com.canoo.library.persistence.repository.UserRepository;
-import com.canoo.library.security.JWTUtil;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -17,6 +20,9 @@ import java.util.List;
 
 @Configuration
 public class AppConfig {
+
+    @Autowired
+    PasswordEncoder encoder;
 
     @Bean
     BookRepository bookRepository(){
@@ -40,14 +46,24 @@ public class AppConfig {
 
     @Bean
     UserRepository userRepository(){
-        //TODO create dummy data
+        User testUser = new User.Builder()
+                .setName("testUser")
+                .setPassword(encoder.encode("password123"))
+                .setEmail("testuser@canoo.com")
+                .build();
 
-        return new InMemoryUserRepository(new ArrayList<>());
-    }
+        User admin = new User.Builder()
+                .setName("admin")
+                .setPassword(encoder.encode("admin123"))
+                .setEmail("admin@canoo.com")
+                .setRole(Role.ROLE_ADMIN.toString())
+                .build();
 
-    @Bean
-    JWTUtil jwtUtil(){
-        return new JWTUtil();
+        List<User> users = new ArrayList<>();
+        users.add(testUser);
+        users.add(admin);
+
+        return new InMemoryUserRepository(users);
     }
 
 }
