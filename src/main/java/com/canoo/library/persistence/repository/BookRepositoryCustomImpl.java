@@ -4,7 +4,7 @@ import com.canoo.library.model.Book;
 import com.canoo.library.model.Genre;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+
 import org.springframework.data.domain.Pageable;
 
 
@@ -51,22 +51,26 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
         CriteriaQuery<Book> criteria = builder.createQuery(Book.class);
-        Root<Book> learnItemListRoot = criteria.from(Book.class);
+        Root<Book> root = criteria.from(Book.class);
         List<Predicate> predicates = new ArrayList<>();
 
-        id.ifPresent(i->predicates.add(builder.equal(learnItemListRoot.<Long>get("id"),i)));
+        id.ifPresent(i->predicates.add(builder.equal(root.<Long>get("id"),i)));
 
-        title.ifPresent(t->predicates.add(builder.like(learnItemListRoot.<String>get("title"),"%"+t+"%")));
+        title.ifPresent(t->predicates.add(builder.like(root.<String>get("title"),"%"+t+"%")));
 
-        author.ifPresent(a->predicates.add(builder.like(learnItemListRoot.<String>get("author"),"%"+a+"%")));
+        author.ifPresent(a->predicates.add(builder.like(root.<String>get("author"),"%"+a+"%")));
 
-        description.ifPresent(d->predicates.add(builder.like(learnItemListRoot.<String>get("author"),"%"+d+"%")));
+        description.ifPresent(d->predicates.add(builder.like(root.<String>get("description"),"%"+d+"%")));
 
-        if(publicationDateFrom.isPresent() && publicationDateTo.isPresent()){
+        predicates.add(builder.greaterThanOrEqualTo(root.<LocalDate> get("publicationDate"),
+                builder.literal(publicationDateFrom.orElse(LocalDate.of(1000,1,1))))
+        );
 
-        }
+        predicates.add(builder.lessThan(root.<LocalDate> get("publicationDate"),
+                builder.literal(publicationDateTo.orElse(LocalDate.of(LocalDate.now().getYear()+1000,1,1))))
+        );
 
-        criteria.select(learnItemListRoot);
+        criteria.select(root);
         criteria.where(builder.and(predicates.toArray(new Predicate[predicates.size()])));
 
         return entityManager.createQuery( criteria );
