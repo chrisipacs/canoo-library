@@ -6,6 +6,9 @@ import com.canoo.library.model.Genre;
 import com.canoo.library.model.SortableBookField;
 import com.canoo.library.persistence.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -42,45 +45,26 @@ public class BookController {
             @RequestParam("pageSize") Optional<Integer> pageSize,
             @RequestParam("sortBy") Optional<String> sortBy) {
 
-        List<Predicate<Book>> predicatesForFiltering = new ArrayList<>();
+        Page<Book> booksToShow = repository.searchBooks(id, title, author, publicationDateFrom, publicationDateTo
+                , description, genres, sortBy, PageRequest.of(pageNumber.orElse(0),pageSize.orElse(PAGE_SIZE_DEFAULT),
+                        Sort.by(sortBy.orElse("title"))));
 
-        id.ifPresent(i -> predicatesForFiltering.add(Book.idPredicate(i)));
-        title.ifPresent(t->predicatesForFiltering.add(Book.titlePredicate(t)));
-        author.ifPresent(a ->predicatesForFiltering.add(Book.authorPredicate(a)));
-        description.ifPresent(d ->predicatesForFiltering.add(Book.descriptionPredicate(description.get(),
-                DESCRIPTION_SEARCH_THRESHOLD)));
-        genres.ifPresent(g -> predicatesForFiltering.add(Book.genresPredicate(g)));
 
-        if(publicationDateFrom.isPresent() && publicationDateTo.isPresent()) {
-            predicatesForFiltering.add(Book.publicationDatePredicate(publicationDateFrom.get(), publicationDateTo.get()));
-        }
-
-        Iterable<Book> booksToShow;
-
-        if(sortBy.isPresent()){
-            booksToShow = repository.findBasedOnPredicates(predicatesForFiltering,
-                    pageNumber.orElse(0), pageSize.orElse(PAGE_SIZE_DEFAULT),
-                    SortableBookField.valueOf(sortBy.get().toUpperCase()).getComparator());
-        } else {
-            booksToShow = repository.findBasedOnPredicates(predicatesForFiltering,
-                    pageNumber.orElse(0), pageSize.orElse(PAGE_SIZE_DEFAULT));
-        }
-
-        return new ResponseEntity<>(booksToShow, HttpStatus.OK);
+        return new ResponseEntity<>(booksToShow.getContent(), HttpStatus.OK);
     }
 
     @Secured("ROLE_ADMIN")
     @ResponseBody
     @RequestMapping(value = "/books/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<HttpStatus> deleteBook(@PathVariable("id") Long id){
-        repository.delete(id);
+        repository.deleteById(id);
 
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
     @RequestMapping(value = "/books/{id}", method = RequestMethod.GET)
     public ResponseEntity<Book> getBook(@PathVariable("id") Long id){
-        Iterable<Book> result = getBooks(id);
+        Iterable<Book> result = repository.findAllById(List.of(id));
         for(Book b: result){
             return new ResponseEntity<>(b, HttpStatus.OK);
         }
@@ -100,11 +84,5 @@ public class BookController {
         repository.save(book);
 
         return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    private Iterable<Book> getBooks(Long id) {
-        List<Predicate<Book>> predicates = List.of(Book.idPredicate(id));
-
-        return repository.findBasedOnPredicates(predicates, 0, 1);
     }
 }

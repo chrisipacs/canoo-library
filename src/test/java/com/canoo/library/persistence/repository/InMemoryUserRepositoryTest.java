@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
 
 public class InMemoryUserRepositoryTest {
 
-    private UserRepository userRepository;
+    private InMemoryUserRepository userRepository;
     private List<User> usersInRepository;
     private User testUser;
     private User secondUser;

@@ -1,22 +1,27 @@
 package com.canoo.library.model;
 
+import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Predicate;
 
+@Entity
 public class Book {
 
-    private static Long idCounter = 0L;
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String title;
     private String author;
     private LocalDate publicationDate;
     private String ISBN;
+
+    @Lob
+    @Column( length = 100000 )
     private String description;
+
+    @ElementCollection(targetClass=Genre.class)
+    @Enumerated(EnumType.STRING)
     private List<Genre> genres;
 
     public Book(){
@@ -31,11 +36,6 @@ public class Book {
         this.publicationDate = publicationDate;
         this.genres = genres;
 
-        synchronized (Book.class) {
-            this.id = idCounter;
-            idCounter++;
-        }
-
     }
 
     public String getDescription() {
@@ -45,8 +45,6 @@ public class Book {
     public void setDescription(String description) {
         this.description = description;
     }
-
-    private List<Genre> genre;
 
     public Long getId(){
         return id;

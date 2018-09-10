@@ -1,11 +1,16 @@
 package com.canoo.library.model;
 
+import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
+@Entity
+@Table(uniqueConstraints={@UniqueConstraint(columnNames = {"username" , "email"})})
 public class User {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @NotNull

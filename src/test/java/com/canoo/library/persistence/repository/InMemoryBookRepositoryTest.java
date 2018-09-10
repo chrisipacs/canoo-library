@@ -22,7 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 public class InMemoryBookRepositoryTest {
 
-    private BookRepository repository;
+    private InMemoryBookRepository repository;
     private List<Book> booksInRepository = new ArrayList<>();
 
     @Before

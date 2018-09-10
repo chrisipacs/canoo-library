@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class UserController {
 
-    //http://username:password@example.com/
-
     @Autowired
     private PasswordEncoder encoder;
 
@@ -47,6 +45,8 @@ public class UserController {
         User user = null;
         user = getUserFromRepoByName(userToCreate.getUsername());
 
+        //TODO verify if te email is unique
+
         if(user==null){
             user= new User.Builder()
                             .setName(userToCreate.getUsername())
@@ -54,6 +54,8 @@ public class UserController {
                             .setEmail(userToCreate.getEmail())
                             .build();
             repository.save(user);
+        } else {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
 
         return new ResponseEntity<>(jwtUtil.generateToken(user),HttpStatus.OK);
@@ -62,7 +64,7 @@ public class UserController {
     private User getUserFromRepoByName(String name){
         User user = null;
         try{
-            user = repository.getByName(name);
+            user = repository.getByUsername(name);
         } catch(RecordNotFoundException e){
             return null;
             //TODO log

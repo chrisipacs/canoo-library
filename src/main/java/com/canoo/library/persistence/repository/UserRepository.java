@@ -1,12 +1,13 @@
 package com.canoo.library.persistence.repository;
 
 import com.canoo.library.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository {
+public interface UserRepository extends JpaRepository<User,Long> {
 
     User getById(Long id);
-    User getByName(String name);
-    User getByEmailAddress(String emailAddress);
-    void save(User toSave);
+    User getByUsername(String name);
+    User getByEmail(String emailAddress);
+    User save(User toSave);
 
 }

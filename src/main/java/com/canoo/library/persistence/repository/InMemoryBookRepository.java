@@ -10,7 +10,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class InMemoryBookRepository implements BookRepository {
+public class InMemoryBookRepository {
 
     private final List<Book> books = new ArrayList<>();
 
@@ -18,14 +18,12 @@ public class InMemoryBookRepository implements BookRepository {
         books.forEach(this.books::add);
     }
 
-    @Override
     public Iterable<Book> findBasedOnPredicates(List<Predicate<Book>> predicates, Integer pageNumber, Integer pageSize) {
         Stream<Book> bookStream = createStreamForPredicates(predicates);
 
         return paginate(bookStream, pageNumber, pageSize).collect(Collectors.toSet());
     }
 
-    @Override
     public Iterable<Book> findBasedOnPredicates(List<Predicate<Book>> predicates, Integer pageNumber, Integer pageSize, Comparator<Book> comparator) {
         Stream<Book> bookStream = createStreamForPredicates(predicates);
 
@@ -46,16 +44,15 @@ public class InMemoryBookRepository implements BookRepository {
         return bookStream.skip(pageSize*pageNumber).limit(pageSize);
     }
 
-    @Override
-    public void save(Book toSave) {
+    public Book save(Book toSave) {
         synchronized (books) {
             books.stream().filter(book -> book.equals(toSave)).findFirst().ifPresent(books::remove);
 
             books.add(toSave);
         }
+        return toSave;
     }
 
-    @Override
     public void delete(Long id) {
         synchronized (books){
             books.stream()
