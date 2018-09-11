@@ -6,6 +6,7 @@ import com.canoo.library.model.Genre;
 import com.canoo.library.model.SortableBookField;
 import com.canoo.library.persistence.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -24,12 +25,16 @@ import java.util.function.Predicate;
 @RestController
 @RequestMapping("/api")
 public class BookController {
+
     @Autowired
     private BookRepository repository;
 
-    //TODO move these to a property file
-    private final Integer PAGE_SIZE_DEFAULT = 10;
-    private final Double DESCRIPTION_SEARCH_THRESHOLD = 0.75;
+    //values will be overwritten by spring
+    @Value("${pagesize}")
+    private static final Integer PAGE_SIZE_DEFAULT=10;
+
+    @Value("${pagesizelimit}")
+    private static final Integer PAGE_SIZE_MAX=20;
 
     @ResponseBody
     @RequestMapping(value = "/books", method = RequestMethod.GET)
@@ -43,11 +48,12 @@ public class BookController {
             @RequestParam("genre") Optional<List<Genre>> genres,
             @RequestParam("pageNumber") Optional<Integer> pageNumber,
             @RequestParam("pageSize") Optional<Integer> pageSize,
-            @RequestParam("sortBy") Optional<String> sortBy) {
+            @RequestParam("orderByAsc") Optional<List<String>> orderByAsc,
+            @RequestParam("orderByDesc") Optional<List<String>> orderByDesc) {
 
         Page<Book> booksToShow = repository.searchBooks(id, title, author, publicationDateFrom, publicationDateTo
-                , description, genres, sortBy, PageRequest.of(pageNumber.orElse(0),pageSize.orElse(PAGE_SIZE_DEFAULT),
-                        Sort.by(sortBy.orElse("title"))));
+                , description, genres, orderByAsc, orderByDesc, PageRequest.of(pageNumber.orElse(0),
+                        Math.min(PAGE_SIZE_MAX,pageSize.orElse(PAGE_SIZE_DEFAULT))));
 
 
         return new ResponseEntity<>(booksToShow.getContent(), HttpStatus.OK);

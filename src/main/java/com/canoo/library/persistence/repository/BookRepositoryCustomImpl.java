@@ -7,10 +7,9 @@ import org.springframework.data.domain.PageImpl;
 
 import org.springframework.data.domain.Pageable;
 
-
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -19,6 +18,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
@@ -29,24 +29,26 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     @Override
     public Page<Book> searchBooks(Optional<Long> id, Optional<String> title, Optional<String> author,
                                   Optional<LocalDate> publicationDateFrom, Optional<LocalDate> publicationDateTo,
-                                  Optional<String> description, Optional<List<Genre>> genres, Optional<String> sortBy, Pageable pageable) {
+                                  Optional<String> description, Optional<List<Genre>> genres,
+                                  Optional<List<String>> orderByAsc, Optional<List<String>> orderByDesc,
+                                  Pageable pageable) {
 
-        Query query = createQuery(id,title,author,publicationDateFrom,publicationDateTo,description,genres,sortBy);
-
-        List<Book> list = query.getResultList();
-        int totalRows = query.getResultList().size();
+        TypedQuery<Book> query = createQuery(id,title,author,publicationDateFrom,publicationDateTo,description,genres,
+                orderByAsc, orderByDesc);
 
         query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
         query.setMaxResults(pageable.getPageSize());
 
-        Page<Book> page = new PageImpl<Book>(query.getResultList(), pageable, totalRows);
+        List<Book> list = query.getResultList();
+        int totalRows = query.getResultList().size();
 
-        return page;
+        return new PageImpl<>(list, pageable, totalRows);
     }
 
-    private Query createQuery(Optional<Long> id, Optional<String> title, Optional<String> author,
+    private TypedQuery<Book> createQuery(Optional<Long> id, Optional<String> title, Optional<String> author,
                               Optional<LocalDate> publicationDateFrom, Optional<LocalDate> publicationDateTo,
-                              Optional<String> description, Optional<List<Genre>> genres, Optional<String> sortBy){
+                              Optional<String> description, Optional<List<Genre>> genres,
+                                         Optional<List<String>> orderByAsc, Optional<List<String>> orderByDesc){
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
@@ -62,17 +64,32 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
         description.ifPresent(d->predicates.add(builder.like(root.<String>get("description"),"%"+d+"%")));
 
-        predicates.add(builder.greaterThanOrEqualTo(root.<LocalDate> get("publicationDate"),
+        genres.ifPresent(g->g.forEach(genre->{
+            predicates.add(builder.isMember(genre,root.get("genres")));})
+        );
+
+        predicates.add(builder.greaterThanOrEqualTo(root.get("publicationDate"),
                 builder.literal(publicationDateFrom.orElse(LocalDate.of(1000,1,1))))
         );
 
-        predicates.add(builder.lessThan(root.<LocalDate> get("publicationDate"),
+        predicates.add(builder.lessThan(root.get("publicationDate"),
                 builder.literal(publicationDateTo.orElse(LocalDate.of(LocalDate.now().getYear()+1000,1,1))))
         );
 
         criteria.select(root);
-        criteria.where(builder.and(predicates.toArray(new Predicate[predicates.size()])));
+        criteria.where(builder.and(predicates.toArray(new Predicate[0])));
 
-        return entityManager.createQuery( criteria );
+        orderByAsc.ifPresent(orderByAscList->
+                criteria.orderBy(orderByAscList.stream()
+                                    .map(orderByField -> builder.asc(root.get(orderByField)))
+                                    .collect(Collectors.toList())));
+
+
+        orderByDesc.ifPresent(orderByDescList->
+                criteria.orderBy(orderByDescList.stream()
+                        .map(orderByField -> builder.desc(root.get(orderByField)))
+                        .collect(Collectors.toList())));
+
+        return entityManager.createQuery(criteria);
     }
 }
