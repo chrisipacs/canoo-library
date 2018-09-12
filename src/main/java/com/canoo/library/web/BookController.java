@@ -31,10 +31,10 @@ public class BookController {
 
     //values will be overwritten by spring
     @Value("${pagesize}")
-    private static final Integer PAGE_SIZE_DEFAULT=10;
+    private Integer PAGE_SIZE_DEFAULT;
 
     @Value("${pagesizelimit}")
-    private static final Integer PAGE_SIZE_MAX=20;
+    private Integer PAGE_SIZE_MAX;
 
     @ResponseBody
     @RequestMapping(value = "/books", method = RequestMethod.GET)

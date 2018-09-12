@@ -39,12 +39,7 @@ public class JWTAuthenticationFilter extends AbstractAuthenticationProcessingFil
             return false;
         }
 
-        //TODO describe this logic more elegantly
-
         Boolean requestMethodIsNotGet = !request.getMethod().equals(RequestMethod.GET.toString());
-        //Boolean tryingToAccessUsers = request.getPathInfo().contains("/user");
-
-        Boolean requiresAuth = (requestMethodIsNotGet)  && super.requiresAuthentication(request,response);
 
         return (requestMethodIsNotGet)  && super.requiresAuthentication(request,response);
     }

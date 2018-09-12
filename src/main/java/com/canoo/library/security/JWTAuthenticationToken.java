@@ -7,8 +7,6 @@ import org.springframework.security.core.GrantedAuthority;
 
 public class JWTAuthenticationToken extends AbstractAuthenticationToken {
 
-    //TODO
-    private static final long serialVersionUID = -5539025340793479937L;
     String token;
     private Object credentials;
     private Object principal;

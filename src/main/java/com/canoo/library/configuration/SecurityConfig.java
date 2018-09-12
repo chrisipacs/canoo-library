@@ -1,7 +1,7 @@
 package com.canoo.library.configuration;
 
 import com.canoo.library.security.*;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -41,10 +41,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) throws Exception {
         web
                 .ignoring()
-                .antMatchers("/register")
-                //.antMatchers(HttpMethod.GET,"/api/books**")
-                //.antMatchers(HttpMethod.DELETE,"/api/books**")
-                //.antMatchers(HttpMethod.DELETE,"/api/books/**")
+                .antMatchers("/register*")
                 .antMatchers("/login*");
     }
 
@@ -59,26 +56,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return new JWTAuthenticationProvider(jwtUtil());
     }
 
-    //TODO add all the other necessary stuff based on https://github.com/chrisipacs/Mozarella/blob/master/src/main/java/com/hybridtheory/mozarella/configuration/authentication/AuthenticationConfig.java
-
     @Bean
     AuthenticationEntryPoint authenticationEntryPoint(){
         return new RestAuthenticationEntryPoint();
     }
 
     @Bean
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
-    }
+    JWTAuthenticationFilter authenticationFilter() throws Exception {
+            JWTAuthenticationFilter filter = new JWTAuthenticationFilter(null, successHandler());
+            filter.setAuthenticationManager(super.authenticationManagerBean());
 
-    @Bean
-    JWTAuthenticationFilter authenticationFilter(){
-        try {
-            return new JWTAuthenticationFilter(authenticationManagerBean(), successHandler());
-        } catch (Exception e) {
-            return new JWTAuthenticationFilter(null,successHandler());
-        }
+            return filter;
     }
 
     @Bean
