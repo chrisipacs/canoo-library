@@ -48,13 +48,6 @@ public class InMemoryBookRepositoryTest {
     }
 
     @Test
-    public void findByIdFindsBookBasedOnId() {
-        Iterable<Book> result = repository.findBasedOnPredicates(List.of(Book.idPredicate(booksInRepository.get(0).getId())),0,10);
-
-        assertThat(result, iterableWithSize(1));
-    }
-
-    @Test
     public void findByTitleFindsBookBasedOnFullTitle() {
         Iterable<Book> result = repository.findBasedOnPredicates(List.of(Book.titlePredicate("The Lord of the Rings")),0,10);
 

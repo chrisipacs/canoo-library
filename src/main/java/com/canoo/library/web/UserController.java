@@ -45,8 +45,6 @@ public class UserController {
         User user = null;
         user = getUserFromRepoByName(userToCreate.getUsername());
 
-        //TODO verify if te email is unique
-
         if(user==null){
             user= new User.Builder()
                             .setName(userToCreate.getUsername())
@@ -67,7 +65,6 @@ public class UserController {
             user = repository.getByUsername(name);
         } catch(RecordNotFoundException e){
             return null;
-            //TODO log
         }
 
         return user;

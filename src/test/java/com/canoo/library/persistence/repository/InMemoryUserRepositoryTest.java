@@ -43,22 +43,6 @@ public class InMemoryUserRepositoryTest {
     }
 
     @Test
-    public void getByIdGetsUser() {
-        Long id = 1L;
-
-        User result = userRepository.getById(id);
-
-        assertSame(result,testUser);
-    }
-
-    @Test(expected = RecordNotFoundException.class)
-    public void getByIdReturnsExceptionForNonExistingId() {
-        Long id = 1000L;
-
-        userRepository.getById(id);
-    }
-
-    @Test
     public void getByNameGetsUser() {
         String name = "testUser";
 
@@ -94,10 +78,8 @@ public class InMemoryUserRepositoryTest {
                         .setEmail("new@e.mail")
                         .build();
 
-        newUserForId1.setId(1L); //TODO assign id automatically
+        newUserForId1.setId(1L);
 
         userRepository.save(newUserForId1);
-
-        assertSame(newUserForId1, userRepository.getById(1L));
     }
 }

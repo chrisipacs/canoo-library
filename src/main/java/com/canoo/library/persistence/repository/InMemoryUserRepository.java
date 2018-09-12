@@ -13,10 +13,6 @@ public class InMemoryUserRepository  {
         users.forEach(this.users::add);
     }
 
-    public User getById(Long id) {
-        return users.stream().filter(user->user.getId().equals(id)).findFirst().orElseThrow(RecordNotFoundException::new);
-    }
-
     public User getByName(String name) {
         return users.stream().filter(user->user.getUsername().equals(name)).findFirst().orElseThrow(RecordNotFoundException::new);
     }
