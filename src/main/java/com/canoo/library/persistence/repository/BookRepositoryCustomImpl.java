@@ -27,13 +27,14 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
 
     @Override
-    public Page<Book> searchBooks(Optional<Long> id, Optional<String> title, Optional<String> author,
+    public Page<Book> searchBooks(Optional<Long> id, Optional<String> title, Optional<String> author, Optional<String> isbn,
                                   Optional<LocalDate> publicationDateFrom, Optional<LocalDate> publicationDateTo,
                                   Optional<String> description, Optional<List<Genre>> genres,
                                   Optional<List<String>> orderByAsc, Optional<List<String>> orderByDesc,
                                   Pageable pageable) {
 
-        TypedQuery<Book> query = createQuery(id,title,author,publicationDateFrom,publicationDateTo,description,genres,
+        TypedQuery<Book> query = createQuery(id,title,author,isbn,publicationDateFrom,publicationDateTo,description,
+                genres,
                 orderByAsc, orderByDesc);
 
         query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
@@ -45,7 +46,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         return new PageImpl<>(list, pageable, totalRows);
     }
 
-    private TypedQuery<Book> createQuery(Optional<Long> id, Optional<String> title, Optional<String> author,
+    private TypedQuery<Book> createQuery(Optional<Long> id, Optional<String> title, Optional<String> author, Optional<String> isbn,
                               Optional<LocalDate> publicationDateFrom, Optional<LocalDate> publicationDateTo,
                               Optional<String> description, Optional<List<Genre>> genres,
                                          Optional<List<String>> orderByAsc, Optional<List<String>> orderByDesc){
@@ -61,6 +62,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         title.ifPresent(t->predicates.add(builder.like(root.<String>get("title"),"%"+t+"%")));
 
         author.ifPresent(a->predicates.add(builder.like(root.<String>get("author"),"%"+a+"%")));
+
+        isbn.ifPresent(i->predicates.add(builder.like(root.<String>get("ISBN"),"%"+i+"%")));
 
         description.ifPresent(d->predicates.add(builder.like(root.<String>get("description"),"%"+d+"%")));
 

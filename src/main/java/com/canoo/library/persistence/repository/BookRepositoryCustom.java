@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BookRepositoryCustom {
-    Page<Book> searchBooks(Optional<Long> id, Optional<String> title, Optional<String> author,
+    Page<Book> searchBooks(Optional<Long> id, Optional<String> title, Optional<String> author, Optional<String> isbn,
                            Optional<LocalDate> publicationDateFrom, Optional<LocalDate> publicationDateTo,
                            Optional<String> description, Optional<List<Genre>> genres, Optional<List<String>> orderByAsc, Optional<List<String>> orderByDesc,
                            Pageable pageable);

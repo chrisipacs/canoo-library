@@ -42,6 +42,7 @@ public class BookController {
             @RequestParam("id") Optional<Long> id,
             @RequestParam("title") Optional<String> title,
             @RequestParam("author") Optional<String> author,
+            @RequestParam("ISBN") Optional<String> isbn,
             @RequestParam("publicationDateFrom") Optional<LocalDate> publicationDateFrom,
             @RequestParam("publicationDateTo") Optional<LocalDate> publicationDateTo,
             @RequestParam("description") Optional<String> description,
@@ -51,7 +52,7 @@ public class BookController {
             @RequestParam("orderByAsc") Optional<List<String>> orderByAsc,
             @RequestParam("orderByDesc") Optional<List<String>> orderByDesc) {
 
-        Page<Book> booksToShow = repository.searchBooks(id, title, author, publicationDateFrom, publicationDateTo
+        Page<Book> booksToShow = repository.searchBooks(id, title, author, isbn, publicationDateFrom, publicationDateTo
                 , description, genres, orderByAsc, orderByDesc, PageRequest.of(pageNumber.orElse(0),
                         Math.min(PAGE_SIZE_MAX,pageSize.orElse(PAGE_SIZE_DEFAULT))));
 

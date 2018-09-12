@@ -85,6 +85,15 @@ public class BookControllerIntegrationTest {
     }
 
     @Test
+    public void bookFoundByISBN() throws Exception{
+        mvc.perform(get(BOOKS_ENDPOINT+"?ISBN=0740748475")).andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].title").value("Calvin and Hobbes"));
+
+    }
+
+    @Test
     public void multipleCriteriaReturnsCorrectResult1() throws Exception{
         //all the dramas ordered by publication date (newest first)
         mvc.perform(get(BOOKS_ENDPOINT+"?orderByDesc=publicationDate&genre=DRAMA&pageNumber=0&pageSize=50"))
