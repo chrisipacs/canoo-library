@@ -92,4 +92,17 @@ public class BookController {
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @RequestMapping(value = "/books", method = RequestMethod.PUT, consumes =
+            MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<Book> createBook(@RequestBody Book book){
+
+        if(book.getId()!=null){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        repository.save(book);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }
